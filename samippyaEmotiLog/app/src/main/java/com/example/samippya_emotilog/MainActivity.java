@@ -3,7 +3,6 @@ package com.example.samippya_emotilog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,34 +11,17 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Emoticon arrays
-    private final String[] emoticons = {
-            "😊", "😢", "😰",
-            "🎉", "😠", "😨",
-            "😴", "🤢", "😲"
-    };
-
-    private final String[] emoticonNames = {
-            "Happy", "Sad", "Stressed",
-            "Excited", "Angry", "Anxious",
-            "Tired", "Disgust", "Surprise"
-    };
-
     // Data storage
-    private List<EmoticonLog> logs;
+    private ArrayList<EmoticonLog> logs;
 
-    // UI Components
-    private LinearLayout summaryContainer;
-    private Button viewSummaryButton;
-    private Button closeSummaryButton;
-    private TextView summaryText;
-    private Button clearDataButton; // Button inside summary to clear data
+    // UI elements
+    private TextView displayTextView;
+    private boolean showingSummary = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,160 +31,210 @@ public class MainActivity extends AppCompatActivity {
         // Initialize data
         logs = new ArrayList<>();
 
-        // Initialize views
-        summaryContainer = findViewById(R.id.summaryContainer);
-        viewSummaryButton = findViewById(R.id.viewSummaryButton);
-        closeSummaryButton = findViewById(R.id.closeSummaryButton);
-        summaryText = findViewById(R.id.summaryText);
-        clearDataButton = findViewById(R.id.clearDataButton);
+        // Get display text view
+        displayTextView = findViewById(R.id.displayTextView);
 
-        // Setup UI components
+        // Setup all button click listeners
         setupEmoticonButtons();
-        setupListeners();
+        setupActionButtons();
     }
 
     private void setupEmoticonButtons() {
-        LinearLayout emoticonGrid = findViewById(R.id.emoticonGrid);
-
-        // Create 3 rows of 3 buttons each
-        for (int row = 0; row < 3; row++) {
-            LinearLayout rowLayout = new LinearLayout(this);
-            rowLayout.setOrientation(LinearLayout.HORIZONTAL);
-            LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    0,
-                    1f
-            );
-            rowLayout.setLayoutParams(rowParams);
-
-            for (int col = 0; col < 3; col++) {
-                final int index = row * 3 + col;
-                Button button = new Button(this);
-                button.setText(emoticons[index]);
-                button.setTextSize(32f);
-
-                LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-                        0,
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        1f
-                );
-                buttonParams.setMargins(8, 8, 8, 8);
-                button.setLayoutParams(buttonParams);
-
-                // Set click listener
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        logEmotion(emoticons[index]);
-                    }
-                });
-
-                rowLayout.addView(button);
+        // Happy button
+        Button btnHappy = findViewById(R.id.btnHappy);
+        btnHappy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("😊", "Happy");
             }
+        });
 
-            emoticonGrid.addView(rowLayout);
+        // Sad button
+        Button btnSad = findViewById(R.id.btnSad);
+        btnSad.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("😢", "Sad");
+            }
+        });
+
+        // Stressed button
+        Button btnStressed = findViewById(R.id.btnStressed);
+        btnStressed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("😰", "Stressed");
+            }
+        });
+
+        // Excited button
+        Button btnExcited = findViewById(R.id.btnExcited);
+        btnExcited.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("🎉", "Excited");
+            }
+        });
+
+        // Angry button
+        Button btnAngry = findViewById(R.id.btnAngry);
+        btnAngry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("😠", "Angry");
+            }
+        });
+
+        // Anxious button
+        Button btnAnxious = findViewById(R.id.btnAnxious);
+        btnAnxious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("😨", "Anxious");
+            }
+        });
+
+        // Tired button
+        Button btnTired = findViewById(R.id.btnTired);
+        btnTired.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("😴", "Tired");
+            }
+        });
+
+        // Disgust button
+        Button btnDisgust = findViewById(R.id.btnDisgust);
+        btnDisgust.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("🤢", "Disgust");
+            }
+        });
+
+        // Surprise button
+        Button btnSurprise = findViewById(R.id.btnSurprise);
+        btnSurprise.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addLog("😲", "Surprise");
+            }
+        });
+    }
+
+    private void setupActionButtons() {
+        // View Summary button
+        Button btnViewSummary = findViewById(R.id.btnViewSummary);
+        btnViewSummary.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleView();
+            }
+        });
+
+        // Clear button
+        Button btnClear = findViewById(R.id.btnClear);
+        btnClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearLogs();
+            }
+        });
+    }
+
+    private void addLog(String emoticon, String emotionName) {
+        logs.add(new EmoticonLog(emoticon, emotionName));
+
+        if (showingSummary) {
+            displaySummary();
+        } else {
+            displayLogs();
         }
     }
 
-    private void setupListeners() {
-        viewSummaryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSummary();
-            }
-        });
+    private void toggleView() {
+        showingSummary = !showingSummary;
 
-        closeSummaryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideSummary();
-            }
-        });
+        Button btnViewSummary = findViewById(R.id.btnViewSummary);
 
-        clearDataButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                logs.clear();
-                updateSummaryText();
-            }
-        });
-    }
-
-    private void logEmotion(String emoticon) {
-        logs.add(new EmoticonLog(emoticon));
-
-        // If summary is open, update it in real-time
-        if (summaryContainer.getVisibility() == View.VISIBLE) {
-            updateSummaryText();
+        if (showingSummary) {
+            displaySummary();
+            btnViewSummary.setText("📝 View Logs");
+        } else {
+            displayLogs();
+            btnViewSummary.setText("📊 View Summary");
         }
     }
 
-    private void showSummary() {
-        summaryContainer.setVisibility(View.VISIBLE);
-        updateSummaryText();
-    }
-
-    private void hideSummary() {
-        summaryContainer.setVisibility(View.GONE);
-    }
-
-    private void updateSummaryText() {
+    private void displayLogs() {
         if (logs.isEmpty()) {
-            summaryText.setText("No logs yet!\n\nStart tracking your emotions by tapping the emoticon buttons.");
+            displayTextView.setText("No logs yet. Tap an emotion above to start!");
             return;
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-        String today = sdf.format(new Date());
+        StringBuilder text = new StringBuilder();
+        text.append("📝 Recent Logs:\n");
+        text.append("═══════════════════\n\n");
 
-        // 1. Calculate Counts
-        Map<String, Integer> emoticonCounts = new HashMap<>();
-        for (EmoticonLog log : logs) {
-            String emoticon = log.getEmoticon();
-            emoticonCounts.put(emoticon, emoticonCounts.getOrDefault(emoticon, 0) + 1);
-        }
-
-        StringBuilder summary = new StringBuilder();
-
-        // --- Section 1: Statistics ---
-        summary.append("📊 EMOTION STATS\n");
-        summary.append("Date: ").append(today).append("\n");
-        summary.append("Total Events: ").append(logs.size()).append("\n");
-        summary.append("━━━━━━━━━━━━━━━━━━━━\n");
-
-        // Sort by count (descending)
-        List<Map.Entry<String, Integer>> sortedEntries = new ArrayList<>(emoticonCounts.entrySet());
-        sortedEntries.sort((a, b) -> b.getValue().compareTo(a.getValue()));
-
-        for (Map.Entry<String, Integer> entry : sortedEntries) {
-            String emoticon = entry.getKey();
-            int count = entry.getValue();
-
-            // Match symbol to name
-            String name = "";
-            for(int i=0; i<emoticons.length; i++) {
-                if(emoticons[i].equals(emoticon)) name = emoticonNames[i];
-            }
-
-            int percentage = (int) ((count / (float) logs.size()) * 100);
-            summary.append(emoticon).append(" ").append(name)
-                    .append(": ").append(count)
-                    .append(" (").append(percentage).append("%)\n");
-        }
-
-        // --- Section 2: Detailed History (The Requirement) ---
-        summary.append("\n\n📝 DETAILED HISTORY\n");
-        summary.append("━━━━━━━━━━━━━━━━━━━━\n");
-
-        // Loop backwards to show newest first
+        // Display newest first
         for (int i = logs.size() - 1; i >= 0; i--) {
             EmoticonLog log = logs.get(i);
-            summary.append(log.getFormattedTime())
-                    .append("  ")
-                    .append(log.getEmoticon())
-                    .append("\n");
+            text.append(log.getLogDisplay()).append("\n");
         }
 
-        summaryText.setText(summary.toString());
+        displayTextView.setText(text.toString());
+    }
+
+    private void displaySummary() {
+        if (logs.isEmpty()) {
+            displayTextView.setText("No logs yet!\n\nStart tracking your emotions by tapping the emoticon buttons above.");
+            return;
+        }
+
+        // Count each emotion
+        Map<String, Integer> counts = new HashMap<>();
+        Map<String, String> names = new HashMap<>();
+
+        for (EmoticonLog log : logs) {
+            String emoticon = log.getEmoticon();
+            counts.put(emoticon, counts.getOrDefault(emoticon, 0) + 1);
+            names.put(emoticon, log.getEmotionName());
+        }
+
+        // Build summary text
+        StringBuilder text = new StringBuilder();
+        text.append("📊 EMOTION SUMMARY\n");
+        text.append("Date: ").append(getCurrentDate()).append("\n");
+        text.append("═══════════════════════════\n\n");
+        text.append("Total Logs: ").append(logs.size()).append("\n\n");
+
+        // Sort and display
+        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+            String emoticon = entry.getKey();
+            int count = entry.getValue();
+            int percentage = (count * 100) / logs.size();
+
+            text.append(emoticon).append(" ")
+                    .append(names.get(emoticon)).append(": ")
+                    .append(count).append(" (")
+                    .append(percentage).append("%)\n");
+        }
+
+        displayTextView.setText(text.toString());
+    }
+
+    private void clearLogs() {
+        logs.clear();
+
+        if (showingSummary) {
+            displaySummary();
+        } else {
+            displayLogs();
+        }
+    }
+
+    private String getCurrentDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        return sdf.format(new Date());
     }
 }
